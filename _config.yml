@@ -1,0 +1,6 @@
+# Jekyll configuration for GitHub Pages
+include:
+  - .well-known
+
+# Disable Jekyll processing for JSON files
+exclude: []
