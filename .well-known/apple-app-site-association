@@ -1,0 +1,19 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "9J536667NJ.com.momentotag.app",
+                "paths": [
+                    "/capsule/*",
+                    "/open/*"
+                ]
+            }
+        ]
+    },
+    "webcredentials": {
+        "apps": [
+            "9J536667NJ.com.momentotag.app"
+        ]
+    }
+}

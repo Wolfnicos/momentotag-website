@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Memory Capsule - MomentoTag</title>
+
+    <!-- Smart App Banner for iOS -->
+    <meta name="apple-itunes-app" content="app-id=YOUR_APP_ID, app-argument=momentotag://capsule/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Someone shared a memory with you">
+    <meta property="og:description" content="Open MomentoTag to view this memory capsule">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://momentotag.com/og-capsule.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --accent: #8B5CF6;
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141416;
+            --surface: #1c1c1f;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-tertiary: rgba(255, 255, 255, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        /* Ambient background */
+        .ambient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, var(--accent-glow) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.2) 0%, transparent 40%);
+            animation: ambientMove 20s ease-in-out infinite;
+        }
+
+        @keyframes ambientMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(5deg); }
+            66% { transform: translate(-20px, 20px) rotate(-3deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        /* Capsule icon animation */
+        .capsule-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 32px;
+            position: relative;
+        }
+
+        .capsule-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(139, 92, 246, 0.6) 100%);
+            border-radius: 28px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .capsule-icon::after {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            background: var(--bg-secondary);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .capsule-icon svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            width: 48px;
+            height: 48px;
+            color: var(--accent);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 var(--accent-glow);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 40px 10px var(--accent-glow);
+            }
+        }
+
+        /* Rings around icon */
+        .rings {
+            position: absolute;
+            inset: -20px;
+            pointer-events: none;
+        }
+
+        .ring {
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 50%;
+            animation: ringPulse 3s ease-out infinite;
+        }
+
+        .ring:nth-child(2) { animation-delay: 1s; }
+        .ring:nth-child(3) { animation-delay: 2s; }
+
+        @keyframes ringPulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 40px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px var(--accent-glow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 48px;
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* NFC hint */
+        .nfc-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 24px;
+            padding: 8px 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .nfc-hint svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+
+        /* Loading state */
+        .loading {
+            display: none;
+        }
+
+        body.checking-app .buttons {
+            display: none;
+        }
+
+        body.checking-app .loading {
+            display: block;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient"></div>
+
+    <div class="container">
+        <div class="capsule-icon">
+            <div class="rings">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+            </svg>
+        </div>
+
+        <h1>A Memory Awaits You</h1>
+        <p class="subtitle">Someone linked this object to a special memory. Open MomentoTag to discover it.</p>
+
+        <div class="buttons">
+            <a href="#" class="btn btn-primary" id="openApp">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+                Open in App
+            </a>
+            <a href="https://apps.apple.com/app/momentotag/idYOUR_APP_ID" class="btn btn-secondary" id="downloadApp">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+                Download MomentoTag
+            </a>
+        </div>
+
+        <p class="loading">Opening MomentoTag...</p>
+
+        <div class="nfc-hint">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+            </svg>
+            Scanned via NFC
+        </div>
+    </div>
+
+    <p class="footer">
+        <a href="/">MomentoTag</a> — Turn objects into memories
+    </p>
+
+    <script>
+        // Get capsule ID from URL path
+        const pathParts = window.location.pathname.split('/');
+        const capsuleId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+        // Universal link for the app
+        const appLink = `https://momentotag.com/capsule/${capsuleId}`;
+        const fallbackLink = 'https://apps.apple.com/app/momentotag/idYOUR_APP_ID';
+
+        // Update open in app button
+        const openAppBtn = document.getElementById('openApp');
+        openAppBtn.href = appLink;
+
+        // Try to open app when clicking "Open in App"
+        openAppBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Try Universal Link first
+            const start = Date.now();
+            window.location.href = appLink;
+
+            // If we're still here after 1.5s, app isn't installed
+            setTimeout(function() {
+                if (Date.now() - start < 2000) {
+                    // App didn't open, redirect to App Store
+                    window.location.href = fallbackLink;
+                }
+            }, 1500);
+        });
+
+        // Auto-try to open app on page load (for NFC scans)
+        // Commented out to avoid aggressive redirect, user should tap the button
+        // setTimeout(() => { window.location.href = appLink; }, 500);
+    </script>
+</body>
+</html>

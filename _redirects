@@ -1,0 +1,3 @@
+# Netlify redirects for capsule deep links
+/capsule/*  /capsule/index.html  200
+/open/*     /capsule/index.html  200
