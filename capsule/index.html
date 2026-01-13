@@ -14,6 +14,40 @@
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://momentotag.com/og-capsule.png">
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAX5HeELgU514Vd7GK3OSwCRlBI5jDCfOU",
+            authDomain: "momentotag-e6cab.firebaseapp.com",
+            projectId: "momentotag-e6cab",
+            storageBucket: "momentotag-e6cab.firebasestorage.app",
+            messagingSenderId: "531988345984",
+            appId: "1:531988345984:web:072b9b94e63fbad8ffa265"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // Make available globally
+        window.firebaseDB = db;
+        window.firebaseStorage = storage;
+        window.firebaseDoc = doc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseRef = ref;
+        window.firebaseGetDownloadURL = getDownloadURL;
+        window.firebaseReady = true;
+
+        // Trigger check after Firebase is ready
+        if (window.checkForSharedPhotos) {
+            window.checkForSharedPhotos();
+        }
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -30,6 +64,8 @@
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7);
             --text-tertiary: rgba(255, 255, 255, 0.5);
+            --success: #10B981;
+            --error: #EF4444;
         }
 
         body {
@@ -43,7 +79,7 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         /* Ambient background */
@@ -276,6 +312,221 @@
             display: block;
             color: var(--text-secondary);
         }
+
+        /* ===== PIN Entry Section ===== */
+        .pin-section {
+            display: none;
+            margin-top: 32px;
+        }
+
+        .pin-section.visible {
+            display: block;
+        }
+
+        .pin-label {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .pin-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .pin-input {
+            width: 56px;
+            height: 64px;
+            background: var(--surface);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .pin-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .pin-input.error {
+            border-color: var(--error);
+            animation: shake 0.5s ease;
+        }
+
+        .pin-input.success {
+            border-color: var(--success);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .pin-error {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .pin-error.visible {
+            display: block;
+        }
+
+        /* ===== Photo Gallery Section ===== */
+        .gallery-section {
+            display: none;
+            margin-top: 32px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .gallery-section.visible {
+            display: block;
+        }
+
+        .gallery-header {
+            margin-bottom: 24px;
+        }
+
+        .gallery-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .gallery-meta {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .photo-item {
+            aspect-ratio: 1;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--surface);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.02);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item.loading-photo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-item .spinner-small {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .lightbox.visible {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--surface);
+            border: none;
+            border-radius: 50%;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-close svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Status message */
+        .status-message {
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status-message.visible {
+            display: block;
+        }
+
+        .status-message.info {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* Hide default content when showing gallery */
+        body.showing-gallery .capsule-icon,
+        body.showing-gallery .container > h1,
+        body.showing-gallery .subtitle,
+        body.showing-gallery .buttons,
+        body.showing-gallery .nfc-hint,
+        body.showing-gallery .pin-section {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -313,6 +564,29 @@
 
         <p class="loading">Opening MomentoTag...</p>
 
+        <!-- PIN Entry Section -->
+        <div class="pin-section" id="pinSection">
+            <p class="pin-label">Enter the 4-digit PIN to view shared photos</p>
+            <div class="pin-input-container">
+                <input type="tel" class="pin-input" maxlength="1" data-index="0" inputmode="numeric" pattern="[0-9]*">
+                <input type="tel" class="pin-input" maxlength="1" data-index="1" inputmode="numeric" pattern="[0-9]*">
+                <input type="tel" class="pin-input" maxlength="1" data-index="2" inputmode="numeric" pattern="[0-9]*">
+                <input type="tel" class="pin-input" maxlength="1" data-index="3" inputmode="numeric" pattern="[0-9]*">
+            </div>
+            <p class="pin-error" id="pinError">Incorrect PIN. Please try again.</p>
+        </div>
+
+        <!-- Photo Gallery Section -->
+        <div class="gallery-section" id="gallerySection">
+            <div class="gallery-header">
+                <h2 id="galleryTitle">Shared Memory</h2>
+                <p class="gallery-meta" id="galleryMeta"></p>
+            </div>
+            <div class="photo-grid" id="photoGrid"></div>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
         <div class="nfc-hint">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
@@ -324,6 +598,16 @@
     <p class="footer">
         <a href="/">MomentoTag</a> — Turn objects into memories
     </p>
+
+    <!-- Lightbox for full-size photos -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <img id="lightboxImage" src="" alt="Full size photo">
+    </div>
 
     <script>
         // Get capsule ID from sessionStorage (set by 404.html) or URL path
@@ -337,6 +621,8 @@
             // Clear sessionStorage after reading
             sessionStorage.removeItem('capsuleId');
         }
+
+        console.log('Capsule ID:', capsuleId);
 
         // Universal link for the app
         const appLink = capsuleId ? `https://momentotag.com/capsule/${capsuleId}` : 'https://momentotag.com';
@@ -368,8 +654,194 @@
             }, 1500);
         });
 
-        // Don't auto-redirect - let user choose to open in app or view on web
-        // Auto-redirect was causing infinite loop issues
+        // ===== Firebase Photo Sharing Logic =====
+        let sharedData = null;
+        let photoURLs = [];
+
+        // Check for shared photos
+        window.checkForSharedPhotos = async function() {
+            if (!window.firebaseReady || !capsuleId || capsuleId.length < 8) {
+                return;
+            }
+
+            try {
+                const docRef = window.firebaseDoc(window.firebaseDB, 'sharedCapsules', capsuleId);
+                const docSnap = await window.firebaseGetDoc(docRef);
+
+                if (docSnap.exists()) {
+                    sharedData = docSnap.data();
+                    console.log('Found shared capsule:', sharedData);
+
+                    // Show PIN section
+                    document.getElementById('pinSection').classList.add('visible');
+
+                    // Focus first PIN input
+                    document.querySelector('.pin-input').focus();
+                }
+            } catch (error) {
+                console.error('Error checking for shared photos:', error);
+            }
+        };
+
+        // Call check when Firebase is ready
+        if (window.firebaseReady) {
+            window.checkForSharedPhotos();
+        }
+
+        // PIN Input handling
+        const pinInputs = document.querySelectorAll('.pin-input');
+
+        pinInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+
+                // Only allow numbers
+                e.target.value = value.replace(/[^0-9]/g, '');
+
+                // Move to next input
+                if (value && index < pinInputs.length - 1) {
+                    pinInputs[index + 1].focus();
+                }
+
+                // Check if all inputs are filled
+                checkPIN();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                // Handle backspace
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    pinInputs[index - 1].focus();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+
+                pastedData.split('').forEach((char, i) => {
+                    if (pinInputs[i]) {
+                        pinInputs[i].value = char;
+                    }
+                });
+
+                if (pastedData.length === 4) {
+                    checkPIN();
+                }
+            });
+        });
+
+        function checkPIN() {
+            const enteredPIN = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (enteredPIN.length === 4 && sharedData) {
+                if (enteredPIN === sharedData.pin) {
+                    // Correct PIN
+                    pinInputs.forEach(input => input.classList.add('success'));
+                    document.getElementById('pinError').classList.remove('visible');
+
+                    // Load photos after short delay
+                    setTimeout(() => {
+                        loadPhotos();
+                    }, 500);
+                } else {
+                    // Wrong PIN
+                    pinInputs.forEach(input => {
+                        input.classList.add('error');
+                        input.value = '';
+                    });
+                    document.getElementById('pinError').classList.add('visible');
+                    pinInputs[0].focus();
+
+                    setTimeout(() => {
+                        pinInputs.forEach(input => input.classList.remove('error'));
+                    }, 500);
+                }
+            }
+        }
+
+        async function loadPhotos() {
+            if (!sharedData || !sharedData.photos || sharedData.photos.length === 0) {
+                showStatus('No photos found in this capsule.', 'error');
+                return;
+            }
+
+            // Show gallery section
+            document.body.classList.add('showing-gallery');
+            const gallerySection = document.getElementById('gallerySection');
+            gallerySection.classList.add('visible');
+
+            // Update header
+            document.getElementById('galleryTitle').textContent = sharedData.title || 'Shared Memory';
+            const photoCount = sharedData.photos.length;
+            const dateStr = sharedData.sharedAt ? new Date(sharedData.sharedAt.toDate()).toLocaleDateString() : '';
+            document.getElementById('galleryMeta').textContent = `${photoCount} photo${photoCount !== 1 ? 's' : ''}${dateStr ? ' • Shared ' + dateStr : ''}`;
+
+            // Create photo grid
+            const photoGrid = document.getElementById('photoGrid');
+            photoGrid.innerHTML = '';
+
+            for (let i = 0; i < sharedData.photos.length; i++) {
+                const photoPath = sharedData.photos[i];
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item loading-photo';
+                photoItem.innerHTML = '<div class="spinner-small"></div>';
+                photoGrid.appendChild(photoItem);
+
+                // Load photo from Storage
+                try {
+                    const storageRef = window.firebaseRef(window.firebaseStorage, photoPath);
+                    const url = await window.firebaseGetDownloadURL(storageRef);
+                    photoURLs.push(url);
+
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = `Photo ${i + 1}`;
+                    img.onclick = () => openLightbox(url);
+
+                    photoItem.classList.remove('loading-photo');
+                    photoItem.innerHTML = '';
+                    photoItem.appendChild(img);
+                } catch (error) {
+                    console.error('Error loading photo:', error);
+                    photoItem.innerHTML = '<span style="color: var(--text-tertiary)">Failed to load</span>';
+                    photoItem.classList.remove('loading-photo');
+                }
+            }
+        }
+
+        function openLightbox(url) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            lightboxImage.src = url;
+            lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        // Close lightbox on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') {
+                closeLightbox();
+            }
+        });
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message visible ${type}`;
+        }
     </script>
 </body>
 </html>
