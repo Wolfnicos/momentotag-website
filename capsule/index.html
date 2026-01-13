@@ -368,13 +368,8 @@
             }, 1500);
         });
 
-        // Auto-try to open app on page load (for NFC scans)
-        // This provides a seamless experience - if app is installed, it opens automatically
-        if (capsuleId && capsuleId.length > 8) {
-            setTimeout(() => {
-                window.location.href = appLink;
-            }, 800);
-        }
+        // Don't auto-redirect - let user choose to open in app or view on web
+        // Auto-redirect was causing infinite loop issues
     </script>
 </body>
 </html>
