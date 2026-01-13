@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MomentoTag</title>
+    <script>
+        // Handle /capsule/{uuid} routes for GitHub Pages
+        const path = window.location.pathname;
+
+        if (path.startsWith('/capsule/')) {
+            // Redirect to capsule page with hash for the ID
+            const capsuleId = path.split('/capsule/')[1];
+            if (capsuleId && capsuleId.length > 0) {
+                // Use session storage to pass the capsule ID
+                sessionStorage.setItem('capsuleId', capsuleId);
+                window.location.replace('/capsule/');
+            }
+        } else if (path.startsWith('/open/')) {
+            // Handle /open/{uuid} routes
+            const capsuleId = path.split('/open/')[1];
+            if (capsuleId && capsuleId.length > 0) {
+                sessionStorage.setItem('capsuleId', capsuleId);
+                window.location.replace('/capsule/');
+            }
+        } else {
+            // Redirect to home for other 404s
+            window.location.replace('/');
+        }
+    </script>
+    <style>
+        body {
+            background: #0a0a0b;
+            color: white;
+            font-family: -apple-system, system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .loader {
+            text-align: center;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <p>Loading memory...</p>
+    </div>
+</body>
+</html>

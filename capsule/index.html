@@ -326,17 +326,30 @@
     </p>
 
     <script>
-        // Get capsule ID from URL path
-        const pathParts = window.location.pathname.split('/');
-        const capsuleId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+        // Get capsule ID from sessionStorage (set by 404.html) or URL path
+        let capsuleId = sessionStorage.getItem('capsuleId');
+
+        if (!capsuleId) {
+            // Try to get from URL path
+            const pathParts = window.location.pathname.split('/');
+            capsuleId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+        } else {
+            // Clear sessionStorage after reading
+            sessionStorage.removeItem('capsuleId');
+        }
 
         // Universal link for the app
-        const appLink = `https://momentotag.com/capsule/${capsuleId}`;
+        const appLink = capsuleId ? `https://momentotag.com/capsule/${capsuleId}` : 'https://momentotag.com';
         const fallbackLink = 'https://momentotag.com';
 
         // Update open in app button
         const openAppBtn = document.getElementById('openApp');
         openAppBtn.href = appLink;
+
+        // Update page title with capsule hint
+        if (capsuleId && capsuleId.length > 8) {
+            document.title = 'Memory Capsule - MomentoTag';
+        }
 
         // Try to open app when clicking "Open in App"
         openAppBtn.addEventListener('click', function(e) {
@@ -349,15 +362,19 @@
             // If we're still here after 1.5s, app isn't installed
             setTimeout(function() {
                 if (Date.now() - start < 2000) {
-                    // App didn't open, redirect to App Store
+                    // App didn't open, redirect to home
                     window.location.href = fallbackLink;
                 }
             }, 1500);
         });
 
         // Auto-try to open app on page load (for NFC scans)
-        // Commented out to avoid aggressive redirect, user should tap the button
-        // setTimeout(() => { window.location.href = appLink; }, 500);
+        // This provides a seamless experience - if app is installed, it opens automatically
+        if (capsuleId && capsuleId.length > 8) {
+            setTimeout(() => {
+                window.location.href = appLink;
+            }, 800);
+        }
     </script>
 </body>
 </html>
